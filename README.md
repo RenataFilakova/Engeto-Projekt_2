@@ -30,38 +30,39 @@ Datum vytvoření = aktuální čas
 🗄 Databáze a tabulka
 Název databáze:
 
-task_manager_test
+task\_manager\_test
 
 Tabulka ukoly obsahuje:
 Sloupec	Typ	Popis
-id	INT AUTO_INCREMENT	Primární klíč
+id	INT AUTO\_INCREMENT	Primární klíč
 nazev	VARCHAR(255)	Povinné
 popis	TEXT	Povinné
 stav	VARCHAR(50)	Výchozí: Nezahájeno
-datum_vytvoreni	DATETIME	Automatický timestamp
+datum\_vytvoreni	DATETIME	Automatický timestamp
 🛠 Nastavení projektu
 1️⃣ Nastav environment proměnné
 
 V PowerShellu:
 
-$env:TM_DB_HOST="127.0.0.1"
-$env:TM_DB_USER="root"
-$env:TM_DB_PASSWORD="Prahacz10"
-$env:TM_DB_NAME="task_manager_test"
+$env:TM\_DB\_HOST="127.0.0.1"
+$env:TM\_DB\_USER="root"
+$env:TM\_DB\_PASSWORD="heslo"
+$env:TM\_DB\_NAME="task\_manager\_test"
 
 2️⃣ Spuštění programu
-python vylepseny_task_manager.py
+python vylepseny\_task\_manager.py
 
 🧪 Automatizované testy
 
-Soubor: tests_testmanager.py
+Soubor: tests\_testmanager.py
 Testuje: přidání, aktualizaci, odstranění úkolů (pozitivní i negativní varianty).
 
 Spuštění testů:
-python -m pytest -q tests_testmanager.py
+python -m pytest -q tests\_testmanager.py
 
 Očekávaný výsledek:
 6 passed in X.XXs
+
 
 
 Testy využívají:
@@ -88,3 +89,4 @@ editorové soubory
 
 Autor:
 Renata Filáková
+
