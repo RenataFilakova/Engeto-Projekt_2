@@ -86,9 +86,5 @@ pytest cache
 
 editorové soubory
 
-🎓 Závěr
-
-Projekt splňuje všechna kritéria zadání
-✔ automatizované testy
-✔ čistá testovací databáze
-✔ Git & GitHub verzování
+Autor:
+Renata Filáková
