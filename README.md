@@ -1,92 +1,114 @@
-📄 README.md – Projekt: Vylepšený Task Manager
-📝 Popis projektu
+Projekt 2: Vylepšený Task Manager (Engeto)
+1. Popis projektu
 
-Tento projekt je vylepšená verze správce úkolů.
-Úkoly jsou ukládány do MySQL databáze a program podporuje operace CRUD (Create, Read, Update, Delete).
-Součástí projektu jsou také automatizované testy pomocí pytestu.
+Projekt implementuje správu úkolů ukládaných v MySQL databázi.
+Aplikace umožňuje provádět CRUD operace (Create, Read, Update, Delete) a obsahuje také automatizované testy pomocí pytestu.
 
-📂 Funkcionality programu
 
-Program nabízí:
+2. Funkce aplikace
+Hlavní funkcionality:
 
-Přidat úkol
+Přidání úkolu
 
-Zobrazit úkoly (filtruje Nezahájeno + Probíhá)
+Zobrazení úkolů (pouze Nezahájeno + Probíhá)
 
-Aktualizovat úkol
+Aktualizace úkolu (změna stavu)
 
-Odstranit úkol
+Odstranění úkolu
 
-Ukončit program
+Ukončení programu
 
 Automatické hodnoty:
 
-ID = automaticky
+ID generováno databází
 
 Výchozí stav = Nezahájeno
 
-Datum vytvoření = aktuální čas
+Datum vytvoření = aktuální timestamp
 
-🗄 Databáze a tabulka
-Název databáze:
+3. Databázová struktura
+Databáze:
 
-task\_manager\_test
+task_manager_test
 
-Tabulka ukoly obsahuje:
-Sloupec	Typ	Popis
-id	INT AUTO\_INCREMENT	Primární klíč
-nazev	VARCHAR(255)	Povinné
-popis	TEXT	Povinné
-stav	VARCHAR(50)	Výchozí: Nezahájeno
-datum\_vytvoreni	DATETIME	Automatický timestamp
-🛠 Nastavení projektu
-1️⃣ Nastav environment proměnné
+Tabulka ukoly:
+Sloupec	Typ	Poznámka
+id	INT AUTO_INCREMENT	primární klíč
+nazev	VARCHAR(255)	povinný
+popis	TEXT	povinný
+stav	VARCHAR(50)	výchozí: Nezahájeno
+datum_vytvoreni	DATETIME	automaticky
+4. Nastavení prostředí
 
-V PowerShellu:
+Před spuštěním aplikace nastavte environment proměnné (PowerShell):
 
-$env:TM\_DB\_HOST="127.0.0.1"
-$env:TM\_DB\_USER="root"
-$env:TM\_DB\_PASSWORD="heslo"
-$env:TM\_DB\_NAME="task\_manager\_test"
+$env:TM_DB_HOST="127.0.0.1"
+$env:TM_DB_USER="root"
+$env:TM_DB_PASSWORD="heslo"
+$env:TM_DB_NAME="task_manager_test"
 
-2️⃣ Spuštění programu
-python vylepseny\_task\_manager.py
 
-🧪 Automatizované testy
+5. Spuštění aplikace
+python vylepseny_task_manager.py
 
-Soubor: tests\_testmanager.py
-Testuje: přidání, aktualizaci, odstranění úkolů (pozitivní i negativní varianty).
+6. Automatizované testy
+
+Testy se nacházejí v souboru:
+
+tests_testmanager.py
 
 Spuštění testů:
-python -m pytest -q tests\_testmanager.py
+python -m pytest -q tests_testmanager.py
 
 Očekávaný výsledek:
-6 passed in X.XXs
+6 passed
 
 
+Testy pokrývají:
 
-Testy využívají:
+přidání úkolu
 
+aktualizaci úkolu
+
+odstranění úkolu
+
+validaci vstupů
+
+chování při neplatných hodnotách
+
+Každá testovaná funkce obsahuje pozitivní i negativní scénář.
+
+7. Instalace závislostí
+pip install -r requirements.txt
+
+
+Obsah requirements.txt:
+
+mysql-connector-python
 pytest
 
-monkeypatch (simulace input())
+8. .gitignore
 
-čištění databáze mezi testy
+Repo ignoruje:
 
-📁 .gitignore
+__pycache__/
 
-Repozitorář ignoruje:
-
-pycache
+.pytest_cache/
 
 .pyc soubory
 
-virtuální prostředí
+virtuální prostředí (venv/)
 
-pytest cache
+editorové složky (VSCode, IDEA)
 
-editorové soubory
+9. Splnění zadání
 
-Autor:
-Renata Filáková
+Projekt splňuje všechny body požadované v zadání:
 
+✔ použití MySQL
+✔ CRUD operace
+✔ validace vstupů
+✔ automatizované testy (pozitivní + negativní)
+✔ mazání testovacích dat
+✔ dokumentace v README
+✔ čistý repozitář bez zbytečných souborů
