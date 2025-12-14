@@ -1,200 +1,185 @@
 import mysql.connector
 from mysql.connector import Error
+from typing import Optional
 
-# ❗ UPRAV SEM SVOJE ÚDAJE ❗
 DB_HOST = "localhost"
-DB_USER = "novy_uzivatel"
-DB_PASSWORD = "Prahacz10"  
-DB_NAME = "task_manager"
+DB_USER = "root"
+DB_PASSWORD = ""
+DB_NAME = "vylepseny_task_manager"
 
 
-# 1) Připojení k databázi
-def pripojeni_db():
+def pripojeni_db() -> Optional[mysql.connector.connection_cext.CMySQLConnection]:
+    """Vytvoří připojení k MySQL databázi."""
     try:
         conn = mysql.connector.connect(
             host=DB_HOST,
             user=DB_USER,
             password=DB_PASSWORD,
-            database=DB_NAME
+            database=DB_NAME,
         )
-        if conn.is_connected():
-            print("✅ Připojení k databázi proběhlo úspěšně.")
+        print("Připojení k databázi proběhlo úspěšně.")
         return conn
     except Error as e:
-        print("❌ Chyba připojení k databázi:", e)
+        print(f"Chyba při připojení k databázi: {e}")
         return None
 
 
-# 2) Vytvoření tabulky
-def vytvoreni_tabulky(conn):
-    sql = """
-    CREATE TABLE IF NOT EXISTS ukoly (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        nazev VARCHAR(255) NOT NULL,
-        popis TEXT NOT NULL,
-        stav ENUM('Nezahájeno', 'Probíhá', 'Hotovo') NOT NULL DEFAULT 'Nezahájeno',
-        datum_vytvoreni DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-    """
-    cur = conn.cursor()
-    cur.execute(sql)
+def vytvoreni_tabulky(conn) -> None:
+    """Vytvoří tabulku 'ukoly', pokud neexistuje."""
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS ukoly (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            nazev VARCHAR(255) NOT NULL,
+            popis TEXT NOT NULL,
+            stav VARCHAR(20) NOT NULL,
+            datum_vytvoreni TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
     conn.commit()
-    cur.close()
-    print("✅ Tabulka 'ukoly' je připravena.")
+    cursor.close()
+    print("Tabulka 'ukoly' je připravena.")
 
 
-# 4) Přidání úkolu
-def pridat_ukol(conn):
-    while True:
-        nazev = input("Zadej název úkolu: ").strip()
-        popis = input("Zadej popis úkolu: ").strip()
+def pridat_ukol(conn) -> Optional[int]:
+    """Získá název a popis úkolu od uživatele a uloží ho do databáze."""
 
-        if not nazev or not popis:
-            print("❗ Název i popis jsou povinné, zkus to znovu.")
-            continue
+    nazev = input("Zadej název úkolu: ").strip()
+    popis = input("Zadej popis úkolu: ").strip()
 
-        sql = "INSERT INTO ukoly (nazev, popis) VALUES (%s, %s)"
-        cur = conn.cursor()
-        cur.execute(sql, (nazev, popis))
-        conn.commit()
-        new_id = cur.lastrowid
-        cur.close()
+    if not nazev or not popis:
+        print("Název i popis musí být vyplněny.")
+        return None
 
-        print(f"✅ Úkol byl uložen s ID {new_id}. (stav: Nezahájeno)")
-        break
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO ukoly (nazev, popis, stav) VALUES (%s, %s, %s)",
+        (nazev, popis, "Nezahájeno"),
+    )
+    conn.commit()
+    new_id = cursor.lastrowid
+    cursor.close()
+
+    print(f"Úkol byl uložen pod ID {new_id}.")
+    return new_id
 
 
-# 5) Zobrazení úkolů
-def zobrazit_ukoly(conn):
-    sql = """
-    SELECT id, nazev, popis, stav, datum_vytvoreni
-    FROM ukoly
-    WHERE stav IN ('Nezahájeno', 'Probíhá')
-    ORDER BY datum_vytvoreni;
-    """
-    cur = conn.cursor()
-    cur.execute(sql)
-    rows = cur.fetchall()
-    cur.close()
-
-    if not rows:
-        print("ℹ Seznam úkolů je prázdný (Nezahájeno/Probíhá).")
-        return
+def zobrazit_ukoly(conn) -> None:
+    """Vypíše všechny úkoly mimo těch se stavem 'Hotovo'."""
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, nazev, popis, stav FROM ukoly WHERE stav != 'Hotovo'")
+    ukoly = cursor.fetchall()
+    cursor.close()
 
     print("\nAKTIVNÍ ÚKOLY:")
-    print("-" * 60)
-    for r in rows:
-        print(f"[{r[0]}] {r[1]} ({r[3]}) – {r[2]} | vytvořeno: {r[4]}")
-    print("-" * 60)
+    print("-----------------------------")
 
-
-# 6) Aktualizace úkolu
-def aktualizovat_ukol(conn):
-    cur = conn.cursor()
-    cur.execute("SELECT id, nazev, stav FROM ukoly ORDER BY datum_vytvoreni;")
-    rows = cur.fetchall()
-    cur.close()
-
-    if not rows:
-        print("ℹ Žádné úkoly k aktualizaci.")
+    if not ukoly:
+        print("Žádné úkoly k zobrazení.")
         return
 
-    print("\nÚKOLY:")
-    for r in rows:
-        print(f"[{r[0]}] {r[1]} – aktuální stav: {r[2]}")
+    for u in ukoly:
+        print(f"[{u[0]}] {u[1]} – {u[3]}")
+        print(f"    Popis: {u[2]}")
+        print("-----------------------------")
+
+
+def aktualizovat_ukol(conn) -> bool:
+    """Aktualizuje stav úkolu. Uživatel může zadat 'q' pro návrat do menu."""
+
+    zobrazit_ukoly(conn)
 
     while True:
-        try:
-            task_id = int(input("Zadej ID úkolu pro změnu stavu: ").strip())
-        except ValueError:
-            print("❗ Zadej platné číslo ID.")
+        user_input = input("Zadej ID úkolu ke změně nebo 'q' pro návrat: ").strip()
+
+        if user_input.lower() == "q":
+            print("Návrat do menu.")
+            return False
+
+        if not user_input.isdigit():
+            print("Neplatné ID, zkus to znovu.")
             continue
 
-        cur = conn.cursor()
-        cur.execute("SELECT COUNT(*) FROM ukoly WHERE id = %s", (task_id,))
-        exists = cur.fetchone()[0] > 0
-        cur.close()
+        task_id = int(user_input)
+
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM ukoly WHERE id = %s", (task_id,))
+        exists = cursor.fetchone()
+        cursor.close()
 
         if not exists:
-            print("❗ Úkol s tímto ID neexistuje, zkus to znovu.")
+            print("Úkol s tímto ID neexistuje.")
             continue
 
-        print("Vyber nový stav:")
+        print("Nový stav:")
         print("1 – Probíhá")
         print("2 – Hotovo")
-        volba = input("Zadej volbu: ").strip()
 
+        volba = input("Zadej číslo stavu: ").strip()
         if volba == "1":
             new_state = "Probíhá"
         elif volba == "2":
             new_state = "Hotovo"
         else:
-            print("❗ Neplatná volba stavu.")
+            print("Neplatná volba stavu.")
             continue
 
-        cur = conn.cursor()
-        cur.execute("UPDATE ukoly SET stav = %s WHERE id = %s", (new_state, task_id))
+        cursor = conn.cursor()
+        cursor.execute("UPDATE ukoly SET stav=%s WHERE id=%s", (new_state, task_id))
         conn.commit()
-        cur.close()
+        cursor.close()
 
-        print("✅ Stav úkolu byl aktualizován.")
-        break
+        print("Stav úkolu byl aktualizován.")
+        return True
 
 
-# 7) Odstranění úkolu
-def odstranit_ukol(conn):
-    cur = conn.cursor()
-    cur.execute("SELECT id, nazev FROM ukoly ORDER BY datum_vytvoreni;")
-    rows = cur.fetchall()
-    cur.close()
+def odstranit_ukol(conn) -> bool:
+    """Odstraní vybraný úkol. Uživatel může zadat 'q' pro návrat."""
 
-    if not rows:
-        print("ℹ Žádné úkoly k odstranění.")
-        return
-
-    print("\nÚKOLY:")
-    for r in rows:
-        print(f"[{r[0]}] {r[1]}")
+    zobrazit_ukoly(conn)
 
     while True:
-        try:
-            task_id = int(input("Zadej ID úkolu k odstranění: ").strip())
-        except ValueError:
-            print("❗ Zadej platné číslo ID.")
+        user_input = input("Zadej ID úkolu k odstranění nebo 'q' pro návrat: ").strip()
+
+        if user_input.lower() == "q":
+            print("Návrat do menu.")
+            return False
+
+        if not user_input.isdigit():
+            print("Neplatné ID, zkus to znovu.")
             continue
 
-        cur = conn.cursor()
-        cur.execute("SELECT COUNT(*) FROM ukoly WHERE id = %s", (task_id,))
-        exists = cur.fetchone()[0] > 0
-        cur.close()
+        task_id = int(user_input)
+
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM ukoly WHERE id=%s", (task_id,))
+        exists = cursor.fetchone()
 
         if not exists:
-            print("❗ Úkol s tímto ID neexistuje, zkus to znovu.")
+            cursor.close()
+            print("Úkol s tímto ID neexistuje.")
             continue
 
-        confirm = input("Opravdu chceš úkol smazat? (a/n): ").strip().lower()
-        if confirm not in ("a", "y"):
-            print("❌ Smazání zrušeno.")
-            return
-
-        cur = conn.cursor()
-        cur.execute("DELETE FROM ukoly WHERE id = %s", (task_id,))
+        cursor.execute("DELETE FROM ukoly WHERE id=%s", (task_id,))
         conn.commit()
-        cur.close()
+        cursor.close()
 
-        print("✅ Úkol byl smazán.")
-        break
+        print("Úkol byl odstraněn.")
+        return True
 
 
-# 3) Hlavní menu
-def hlavni_menu(conn):
+def hlavni_menu(conn) -> None:
+    """Zobrazuje hlavní menu aplikace a řídí tok programu."""
+
     while True:
-        print("\n===== Vylepšený Task Manager =====")
+        print("\n===== TASK MANAGER =====")
         print("1 – Přidat úkol")
-        print("2 – Zobrazit úkoly (Nezahájeno / Probíhá)")
+        print("2 – Zobrazit úkoly")
         print("3 – Aktualizovat úkol")
         print("4 – Odstranit úkol")
-        print("5 – Ukončit program")
+        print("5 – Konec")
 
         volba = input("Zadej volbu: ").strip()
 
@@ -207,27 +192,15 @@ def hlavni_menu(conn):
         elif volba == "4":
             odstranit_ukol(conn)
         elif volba == "5":
-            print("👋 Konec programu.")
+            print("Ukončuji program.")
             break
         else:
-            print("❗ Neplatná volba, zkus to znovu.")
-
-
-def main():
-    print("Spouštím Vylepšený Task Manager...")
-    conn = pripojeni_db()
-    if conn is None:
-        print("❗ Nelze pokračovat bez připojení k databázi.")
-        return
-
-    vytvoreni_tabulky(conn)
-
-    try:
-        hlavni_menu(conn)
-    finally:
-        conn.close()
-        print("🔚 Spojení s databází ukončeno.")
+            print("Neplatná volba.")
 
 
 if __name__ == "__main__":
-    main()
+    conn = pripojeni_db()
+    if conn:
+        vytvoreni_tabulky(conn)
+        hlavni_menu(conn)
+        conn.close()
