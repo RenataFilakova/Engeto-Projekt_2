@@ -1,95 +1,60 @@
-Funkcionalita aplikace:
+# Projekt 2 – Vylepšený Task Manager (MySQL + pytest)
 
-Aplikace nabízí následující možnosti:
+Konzolová aplikace pro správu úkolů, která využívá **MySQL databázi** pro ukládání dat  
+a obsahuje **automatizované testy pomocí pytest**, ověřující skutečný stav databáze.
 
-Přidat úkol
 
-zadání názvu a popisu
 
-validace prázdných vstupů
+---
 
-úkol se ukládá do databáze
+ Funkcionalita aplikace
 
-Zobrazit úkoly
+Aplikace umožňuje provádět základní CRUD operace nad úkoly:
 
-výpis všech uložených úkolů
+- Přidání úkolu (název, popis, výchozí stav *Nezahájeno*)
+- Zobrazení aktivních úkolů (*Nezahájeno*, *Probíhá*)
+- Aktualizaci stavu úkolu (*Probíhá*, *Hotovo*)
+- Odstranění úkolu
+- Ukončení programu
 
-přehledná struktura výpisu
+Aplikace obsahuje validaci vstupů a únikové znaky (`q`) pro návrat do hlavního menu.
 
-Aktualizovat úkol
+---
 
-výběr úkolu podle ID
+ Použité technologie
 
-změna stavu na: Nezahájeno / Probíhá / Hotovo
+- Python 3
+- MySQL
+- mysql-connector-python
+- pytest
 
-možnost návratu do menu volbou q
+---
 
-Odstranit úkol
+ Databáze
 
-smazání úkolu podle ID
+Aplikace pracuje s MySQL databází.
 
-zobrazení seznamu úkolů před mazáním
+- Databázové připojení je řízeno pomocí **environmentálních proměnných**
+- Tabulka `ukoly` se vytvoří automaticky při spuštění aplikace (pokud neexistuje)
+- Sloupec `datum_vytvoreni` je generován přímo databází
 
-možnost návratu volbou q
+ Struktura tabulky `ukoly`
 
-Ukončit program
+- `id` – primární klíč
+- `nazev` – název úkolu
+- `popis` – popis úkolu
+- `stav` – stav úkolu (*Nezahájeno*, *Probíhá*, *Hotovo*)
+- `datum_vytvoreni` – timestamp vytvoření
 
-Databázová vrstva
+---
 
-Aplikace používá MySQL a při spuštění provede tyto akce:
+ Spuštění aplikace
 
-připojí se pomocí zadaných environmentálních proměnných
+Před spuštěním je nutné mít dostupnou MySQL databázi  
+a nastavené environmentální proměnné:
 
-automaticky vytvoří tabulku ukoly, pokud neexistuje
-
-ukládá úkoly se strukturou:
-
-Sloupec	Typ	Popis
-id	INT AUTO_INCREMENT	Primární klíč
-nazev	VARCHAR(255)	Název úkolu
-popis	TEXT	Popis úkolu
-stav	VARCHAR(50)	Stav úkolu
-datum_vytvoreni	DATETIME	Automatické vyplnění
-🔧 Nastavení MySQL připojení
-
-Před spuštěním aplikace je nutné nastavit environmentální proměnné:
-
-Windows PowerShell
+```powershell
 $env:DB_HOST="localhost"
 $env:DB_USER="root"
-$env:DB_PASSWORD="TVÉ_HESLO"
+$env:DB_PASSWORD="heslo"
 $env:DB_NAME="task_manager_test"
-
-Alternativně je lze přidat do systémových proměnných natrvalo.
- 
- Spuštění aplikace
-python vylepseny_task_manager.py
-
- Automatizované testy
-
-Testy jsou napsány v souboru tests_testmanager.py.
-Testují:
-
-přidání úkolu
-
-aktualizaci úkolu
-
-mazání úkolu
-
-negativní a hraniční scénáře
-
-validaci vstupních hodnot
-
-práci s MySQL pomocí testovací databáze
-
-Spuštění testů:
-python -m pytest -q
-
-Struktura projektu:
-Projekt_2/
-│
-├── vylepseny_task_manager.py     # hlavní aplikace
-├── tests_testmanager.py          # automatizované testy
-├── README.md                     # dokumentace
-└── .gitignore                    # ignorované soubory
-
